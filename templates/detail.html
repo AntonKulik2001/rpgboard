@@ -1,0 +1,57 @@
+{% extends 'default.html' %}
+
+{% block title %}
+{{ fullpost.title }}
+{% endblock title %}
+
+{% block content %}
+<h1>{{ fullpost.title }}</h1>
+<h1>{{ fullpost.date|date:'d m Y' }}</h1>
+<h1>{{ fullpost.text }}</h1>
+{% if fullpost.upload %}
+    <img src="{{ fullpost.upload.url }}">
+{% endif %}
+
+<hr>
+
+{% if request.user == fullpost.author %}
+        <form action="" method="get">
+        {{ filterset.form.as_p }}
+        <input type="submit" value="Найти" />
+        </form>
+{% endif %}
+
+{% if request.user != fullpost.author %}
+    <br><a href="{% url 'createresp' pk=fullpost.id %}">Откликнуться</a></br>
+{% endif %}
+
+    {% if response %}
+      <table>
+        <tr>
+            <td>Автор</td>
+            <td>Текст</td>
+            <td>Дата</td>
+            {% if request.user == fullpost.author %}
+                <td>Действия</td>
+            {% endif %}
+        </tr>
+        {% for resp in response %}
+            <tr>
+              <td>{{ resp.author }}</td>
+              <td>{{ resp.text }}</td>
+              <td>{{ resp.date|date:'d m Y'}}</td>
+                {% if request.user == fullpost.author %}
+                     <td><a href="{% url 'resp_delete' pk=resp.id %}">Удалить</a></td>
+                    {% if resp.status != True %}
+                     <td><a href="{% url 'accept' pk=resp.id %}">Принять</a></td>
+                    {% else %}
+                     <td><a href="{% url 'denied' pk=resp.id %}">Отклонить</a></td>
+                    {% endif %}
+                {% endif %}
+            </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+     Нет откликов
+    {% endif %}
+{% endblock content %}

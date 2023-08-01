@@ -1,0 +1,80 @@
+{% extends 'default.html' %}
+{% load thumbnail %}
+{% load custom_tags %}
+
+{% block title %}
+RPG POST
+{% endblock title %}
+
+{% block content %}
+
+    {% if perms.main.add_post %}
+    <a href="{% url 'post_create' %}">Добавить Объявление</a>
+    {% endif %}
+
+    {% if post %}
+    <table>
+        <tr>
+            <td><h1>Объявления</h1></td>
+        </tr>
+    </table>
+    <hr>
+    <table>
+        <tr>
+            <td><h1>Заголовок</h1></td>
+            <td><h1>Категория</h1></td>
+            <td><h1>Дата</h1></td>
+            <td></td>
+            {% if perms.main.change_post or perms.main.delete_post %}
+            <td>Действия</td>
+            {% endif %}
+        </tr>
+
+        {% for posts in post %}
+        <tr>
+            <td><h3><a href="{% url 'fullpost' pk=posts.id %}">{{ posts.title }}</a></h3></td>
+            <td><h3>{{ posts.category }}</h3></td>
+            <td><h3>{{ posts.date|date:'d m Y'}}</h3></td>
+            {% if posts.upload %}
+            {% thumbnail posts.upload "100x100" crop="center" as im %}
+                <td><img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"></td>
+            {% endthumbnail %}
+            {% else %}
+                <td></td>
+            {% endif %}
+            <td>
+                {% if request.user.is_staff or request.user == posts.author %}
+                <a href="{% url 'post_update' pk=posts.id %}">Изменить</a>
+                {% endif %}
+                {% if request.user.is_staff or request.user == posts.author %}
+                <a href="{% url 'post_delete' posts.id %}">Удалить</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    {% else %}
+        <h2>Объявлений нет</h2>
+    {% endif %}
+
+     {% if page_obj.has_previous %}
+        <a href="?{% url_replace page=1 %}">1</a>
+        {% if page_obj.previous_page_number != 1 %}
+            ...
+            <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+        {% endif %}
+    {% endif %}
+
+    {{ page_obj.number }}
+
+    {% if page_obj.has_next %}
+        <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+        {% if paginator.num_pages != page_obj.next_page_number %}
+            ...
+            <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+        {% endif %}
+    {% endif %}
+
+
+{% endblock content %}
